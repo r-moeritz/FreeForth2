@@ -247,5 +247,4 @@ variable base 10 base!
 : bye` ;` cr 0 exit ;
 : help` !"Can't_find_file_ff.ff_needed_for_help!"
 : `boot 2dup+ tp! over >in! wsparse + tp@ over- tuck tib place swap `eval
-  ."\\_FreeForth_1.2_<http://christophe.lavarenne.free.fr/ff>__Try:_help" cr
   `top ;

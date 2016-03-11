@@ -4,7 +4,11 @@
 \ Look in this file for conditionally compiled utilities, beginning either
 \ with [1] [IF] (compiled) or with [0] [IF] (not compiled).
 
-."\\_Loading'ff.ff:_help"
+variable features 80 allot
+: append ( @ # c@ -- ) 2dup c@ + over 2>r c@+ + swap cmove 2r> c! ;
+: -v` ."\\_features:_" features c@+ type cr ;
+
+"help" features append
 "help`" find 2drop '`' which@ 6+ c! \ to be deleted by hid'm
 : help` \ <name> -- ; display help for <name>, or for "help" by default
   wsparse 0= IF 2drop "help" THEN
@@ -176,7 +180,7 @@ variable `fdset  0 , 0 , \ for select, the 2 zeros are a null timeval
 : cls` ( -- ) ."^[[2J"
 : home ( -- ) 0 dup
 : atxy ( xCol yRow -- ) ."^[[" 1+ .\ .";" 1+ .\ ."H" ;
-[1] [IF] ."_normal" \ symbolic attributes and color names
+[1] [IF] "_normal" features append \ symbolic attributes and color names
 : `color ( n -- ) ."^[[" .\ ."m" ;
 : normal 0 `color ;     : bold 1 `color ;          : dim 2 `color ;
 : underline 4 `color ;  : blink 5 `color ;         : inverse 7 `color ;
@@ -196,7 +200,7 @@ variable `fdset  0 , 0 , \ for select, the 2 zeros are a null timeval
   5 k32. ScrollConsoleScreenBufferA drop
 : home ( -- ) 0 dup
 : atxy ( x y -- ) 16 << | stdout 2 k32. SetConsoleCursorPosition drop ;
-[1] [IF] ."_normal" \ symbolic attributes and color names
+[1] [IF] "_normal" features append \ symbolic attributes and color names
 0 constant black  1 constant blue     2 constant green   3 constant cyan
 4 constant red    5 constant magenta  6 constant yellow  7 constant white
 : bright 8+ ;  \ example: "red bright foreground"
@@ -211,7 +215,7 @@ variable `fdset  0 , 0 , \ for select, the 2 zeros are a null timeval
 [THEN]
 
 \ --------------------------------------------------------------------
-[1] [IF] ."_.now" \ Calendar date and time display
+[1] [IF] "_.now" features append \ Calendar date and time display
 : `leap .dec\ ."-2-29" drop ;
 : .d ( n -- ; display days since 0-0-0 as gregorian date )
   146097 /% 400* swap 146096 = drop IF swap 400+ `leap ;THEN
@@ -238,7 +242,7 @@ variable `fdset  0 , 0 , \ for select, the 2 zeros are a null timeval
 [THEN]
 
 \ --------------------------------------------------------------------
-[1] [IF] ."_{{{" \ Performance measurement: {{{ sample code }}}
+[1] [IF] "_{{{" features append \ Performance measurement: {{{ sample code }}}
 \ First try "{{{  }}}" to measure the measurement overhead
 \ 50(push eax)0F31(rdtsc)89C2(mov edx,eax)58(pop eax)
 : rdtsc` over` >S1 $89310F50, ,4 $58C2, ,2 ;  \ read i386 time-stamp counter
@@ -304,7 +308,7 @@ create `STARTUPINFO 72 allot ; `STARTUPINFO 72 2dup 0 fill swap !
 [THEN]
 
 \ --------------------------------------------------------------------
-[1] [IF] ."_+longconds" \ long conditionals
+[1] [IF] "_+longconds" features append \ long conditionals
 \ ff.boot default conditionals are limited to byte offsets for forward jumps
 \ (backward jumps use byte offsets when possible, otherwise long offsets):
 \ this is efficient and encourages programmers to write small definitions.
@@ -347,7 +351,7 @@ create `STARTUPINFO 72 allot ; `STARTUPINFO 72 2dup 0 fill swap !
 [THEN]
 
 \ --------------------------------------------------------------------
-[0] [IF] ."_compat" \ RetroForth/Reva/HelFORTH compatibility words
+[0] [IF] "_compat" features append \ RetroForth/Reva/HelFORTH compatibility words
 \ RetroForth/Reva control structures (see also "help conditionals")
 \ 72:bc/aenc 74:z/nz 76:be/a 78:s/ns 7C:l/ge 7E:le/g (long:+0F10)
 \ E2:loop/jecxz(byte) E8:call/jmp(long) EB:jmp(byte)
@@ -381,7 +385,7 @@ create `STARTUPINFO 72 allot ; `STARTUPINFO 72 2dup 0 fill swap !
 [THEN]
 
 \ --------------------------------------------------------------------
-[1] [IF] ."_f." \ Uses FPU hardware stack: 8-cells * 80-bits(tword)
+[1] [IF] "_f." features append \ Uses FPU hardware stack: 8-cells * 80-bits(tword)
 \ Stack notation: "f:x" represents 80-bits float "x" on FPU stack
 10 constant fcell \ fcell+ fcell- fcell* fcell/ (see literalcompiler)
 
@@ -549,7 +553,7 @@ finit ; \ comment this line to disable FPU initialization when loading ff.ff
 [THEN]  \ 7.5Ksource = 1.6Kcode + 1.3Kheaders
 
 \ --------------------------------------------------------------------------
-[1] [IF] ."_sqrt" \ integer square root (bit per bit algorithm, see Wikipedia)
+[1] [IF] "_sqrt" features append \ integer square root (bit per bit algorithm, see Wikipedia)
 
 : sqrt  \ u -- sqrt(u) ; unsigned input, rounded (or truncated [*]) output
   0 $4000'0000  \ -- u sqrt one ; u = remainder, one = current bit
@@ -565,7 +569,7 @@ finit ; \ comment this line to disable FPU initialization when loading ff.ff
 [THEN]
 
 \ --------------------------------------------------------------------------
-[1] [IF] ."_uart!" \ Serial interface
+[1] [IF] "_uart!" features append \ Serial interface
 
 \ HOWTO:
 \ + list all available comm-ports:  .ports` \ Lin:ttyS0..ttyUSB0.. Win:COM1..
@@ -835,8 +839,7 @@ variable utrace  \ default 0: no trace
 
 \ --------------------------------------------------------------------------
 \ uncomment the following line to remove all headers with initial backquote:
- hid'm  ."_hid'm"
-cr ;
+ hid'm "_hid'm" features append ;
 
 EOF  skips to End-Of-File, so everything after EOF is ignored.
      This may be a good place for any comment about the file.
