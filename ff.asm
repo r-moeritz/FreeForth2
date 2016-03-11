@@ -958,6 +958,7 @@ CODE "wsparse",_wsparse         ; -- @ # ; white-space-parse
         DUP2                    ; -- * *
         mov edi,[tin]           ; edi = input stream parse pointer
         mov ecx,[tp]            ; ecx = input stream limit pointer
+        xor esi,esi             ; zero esi, use as within-quote flag
 @@:     movzx ebx,byte[edi]     ; skip whitespaces
         inc edi
         cmp edi,ecx
@@ -972,6 +973,11 @@ CODE "wsparse",_wsparse         ; -- @ # ; white-space-parse
         cmp edi,ecx
         ja @f                   ; for same behaviour as repnz scasb in parse
         and bl,$7F
+        cmp bl,34               ; quote?
+        jnz .0
+        xor esi,1               ; yes - toggle flag
+.0:     cmp esi,1               ; if within-quote,
+        jz @b                   ; repeat loop
         cmp byte[_number.ct+ebx],9 ; whitespace?
         jnz @b
 @@:     mov [tin],edi           ; save changed input stream pointer
