@@ -241,10 +241,15 @@ variable base 10 base!
 : `exec catch 0;  `back ."_<-error:_" c@+ type cr  2drop
   anon@ 0- 0= IF drop H@ dup@ swap 5+ c@+ + 1+ H! THEN
   here - allot  0 SC c! anon:` 0<>`  START `eval ENTER
-: `top ui tib 1024 under accept 0- 0= exit ?
+:^ `top ui tib 1024 under accept 0- 0= exit ?
   2dup 1- + dup 1- c@ dup ';' - swap '\' - & 0- 0= drop IF drop ELSE
   dup 32 swap c! 1+ dup ';' swap c! 1+ 10 swap c! 2+ THEN REPEAT ;
 : bye` ;` cr 0 exit ;
 : help` !"Can't_find_file_ff.ff_needed_for_help!"
 : `boot 2dup+ tp! over >in! wsparse + tp@ over- tuck tib place swap `eval
   `top ;
+
+variable `mainxt
+: `main `mainxt@ execute 0 exit ;
+: -f` needs` "main" find 0- 0= drop IF `mainxt! `main ' `top !^ ELSE drop THEN ;
+: quit `top ^^ `top ;
