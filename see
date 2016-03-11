@@ -1,0 +1,18 @@
+\ xt[4],ct[1],sz[1],nm[sz],nul
+
+variable ~xt
+: 3dup		>r 2dup r -rot r> ;
+: sz=		under 5 over+ c@ rot = 2drop nzTRUE ? zFALSE ;
+: nm=		3dup 6+ swap $- 0- 0= drop nzTRUE ? zFALSE ;
+: nexth		5+ dupc@ + 2+ ;
+: stop?		dup 5+ c@ 0- 0= drop IF !"not found" THEN ;
+: xtsave	4 over+ c@ 1- drop IF dup@ ~xt! THEN ;
+: noconst	dup 4+ c@ 1- 0= drop IF !"matched a constant or variable" THEN ;
+: findxt	here ~xt! H@ START sz= IF nm= IF BREAK THEN xtsave nexth
+		ENTER stop? REPEAT noconst nip nip @ ~xt@ over- ;
+
+: tmpfile	".see" ;
+: tmpsave	openw0 dup >r ?ior r write ?ior r close ?ior rdrop ;
+: objdump	tmpfile tmpsave "ndisasm -u .see | less -F -+c; rm .see" shell ;
+\ : objdump	tmpfile tmpsave "objdump -D -b binary -mi386 .see | less -F -+c; rm .see" shell ;
+: see`		wsparse findxt objdump ;
