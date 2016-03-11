@@ -402,7 +402,7 @@ macro HDB arg, opt { HD arg, byte, opt } ; C645ooaa
 macro HDW arg, opt { HD arg, word, opt } ; 66C745ooaaaa
 macro HDD arg, opt { HD arg,dword, opt } ; C745ooaaaaaaaa
 
-macro POSTPONE target {         ; target may be literal or register (unchanged)
+macro POSTPN target {           ; target may be literal or register (unchanged)
         HDB $E8                 ; call opcode
         add ebp,5               ; allocate call instruction
         HDD target,-4           ; laydown call target address
@@ -673,15 +673,15 @@ litquote:                       ; @ # -- ; embed a string literal
         call _rst
         cmp byte[edx],""""      ; initial quotes
         jnz @f
-        POSTPONE litstr
+        POSTPN litstr
         jmp strcomma
 @@:     cmp byte[edx],"."       ; initial dot
         jnz @f
-        POSTPONE dotstr
+        POSTPN dotstr
         jmp strcomma
 @@:     cmp byte[edx],"!"       ; initial exclamation mark
         jnz notfnd
-        POSTPONE _error
+        POSTPN _error
 ;;;     jmp _strcomma
 strcomma:                       ; @ # -- ; embed a literal string
         mov edi,ebp             ; edi points on dst string byte count
@@ -858,7 +858,7 @@ _drop1: DROP1                   ; --
 DATA "callmark",callmark,0      ; saves last-call address
 CODE "call,",_call
         call _rst               ; xt -- ; compile a call to runtime entry
-        POSTPONE ebx
+        POSTPN ebx
         mov [callmark],ebp      ; save last-call address for ;;
         jmp _drop1
 
