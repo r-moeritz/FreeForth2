@@ -1,0 +1,5 @@
+*.ff linguist-language=Forth
+*.boot linguist-language=Forth
+hanoi linguist-language=Forth
+hello linguist-language=Forth
+see linguist-language=Forth
