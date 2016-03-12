@@ -118,9 +118,9 @@ CODE "#call",_dlcall            ; #args funh -- funresult
         lea edx,[eax+4*edx]     ; dataSP after funcall
         push edx                ; save it
         xchg eax,esp
-        mov [bssend-4],eax      ; save callSP
+        mov [bssend],eax        ; save callSP
         call ebx                ; eax = funresult
-        mov esp,[bssend-4]      ; restore callSP
+        mov esp,[bssend]        ; restore callSP
         jmp nipeax
 
 if defined ffdl ;; TODO: try to inline dl* functions to compile with fasm only.

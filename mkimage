@@ -1,0 +1,9 @@
+\ loading this with needs/-f changes the values of H and here
+H@ @ \ old here value is xt of first header
+H@ 5+ dupc@ + 2+ \ old H value is next header
+: save  openw0 dup >r ?ior r write ?ior r close ?ior rdrop ;
+\ depends on H being first word, 15+ includes H header itself and final null header
+dup "H" find 2drop which@ 15+ swap - "dict" save
+\ xt of H is the beginning of the compiled area
+H swap H - "cmpl" save
+0 exit ;

@@ -235,6 +235,7 @@ variable base 10 base!
   IF bounds BEGIN c@+ 10- 0= drop UNTIL swap over- THEN
 : eval >in@ tp@ 2>r over+ tp! >in! compiler 2r> tp! >in! ;
 
+:^ dlsetup ;
 : `back >in@ 1- dup BEGIN tib <> drop WHILE 1- dupc@ 10- drop 0= TILL 1+ END
   swap over- type ;
 : `eval eval '
@@ -246,8 +247,9 @@ variable base 10 base!
   dup 32 swap c! 1+ dup ';' swap c! 1+ 10 swap c! 2+ THEN REPEAT ;
 : bye` ;` cr 0 exit ;
 : help` !"Can't_find_file_ff.ff_needed_for_help!"
-: `boot 2dup+ tp! over >in! wsparse + tp@ over- tuck tib place swap `eval
+: `boot dlsetup 2dup+ tp! over >in! wsparse + tp@ over- tuck tib place swap `eval
   `top ;
+`boot ' `bootxt! ;
 
 variable `mainxt
 : `main `mainxt@ execute 0 exit ;

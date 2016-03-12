@@ -409,6 +409,17 @@ macro POSTPN target {           ; target may be literal or register (unchanged)
         sub [ebp-4],ebp         ; convert absolute to relative
 }
 
+
+;;; -------------------------------------------------------
+;;; Put these first to simplify turnkey generation
+
+DATA "H",H,H0                   ; headers
+DATA "anon",anon,ebp0
+DATA "`DS0",DS0,0               ; DATAstack base address, set later
+DATA "`bssend",bssend,0
+DATA "`bootxt",bootxt,0
+DATA "libc",_libc,0
+
 ;;; -------------------------------------------------------
 ;;; basic code generation support
 
@@ -881,7 +892,6 @@ CODE ";;`",_semisemi            ; --
         inc ebp                 ;
         ret
 
-DATA "anon",anon,ebp0
 CODE ";`",_semi                 ; -- ; who needs the interpreter anyway!
         call _rst
         mov ecx,[anon]
@@ -898,7 +908,6 @@ CODE "anon:`",_anon             ; --
         ;; here we could check heap space and warn if small
         ret
 
-DATA "H",H,H0                   ; headers
 CODE ":`",_colon                ; <name> -- ; start named definition
         mov ecx,[anon]
         jecxz @f                ; if anonymous,
@@ -1145,7 +1154,7 @@ CODE "search",_search           ; @ # @k #k -- @r #r ; z:match, nz:fail
 
 CODE "depth",_depth             ; -- n
         DUP1
-.patch: mov ebx,-4              ; BB immediate, patched at ffboot
+        mov ebx,[DS0]
         sub ebx,eax
         sar ebx,2
         ret
@@ -1173,7 +1182,9 @@ ffboot: ;; relocate headers and boot source: H->[headers]tib:[boot]<-tp
         ;; initialize compiler pointer registers:
         mov ebp,ebp0            ; compilation pointer
         lea eax,[esp-4096]      ; allocate CALLstack
-        add [_depth.patch+1],eax; relocate DATAstack base address
+        mov [DS0],-4
+        add [DS0],eax           ; relocate DATAstack base address
+        mov [bssend],_bssend-4
         ;; compile boot source:
 if 1    ;; 0 allows ff.boot debugging, 1 saves 160 bytes
         jmp _compiler
@@ -1244,17 +1255,17 @@ boot:   file "ff.boot"          ; boot source code, initially moved to tib
         align 4
     boot_size = $-boot
 
-if defined ffdl
+;if defined ffdl
 section '.bss'
-    ebp0 = bss                  ; headers_size+boot_size are "lost"
-else
+;    ebp0 = bss                  ; headers_size+boot_size are "lost"
+;else
     ebp0 = heads                ; headers_size+boot_size are recovered
-end if
+;end if
 
 bss     rb 1024*512             ; code and data -> heap <- headers
 tib     rb 1024*256             ; terminal input and blocks buffer
 eob     rb 1024                 ; temporary scratch area
-bssend:                         ; segmentation fault after this address.
+_bssend:                        ; segmentation fault after this address.
 
     bss_size = $-bss
     heap_size = tib-bss
@@ -1262,4 +1273,4 @@ bssend:                         ; segmentation fault after this address.
     H0 = tib-headers_size       ; initial head of headers
     tp0 = tib+boot_size         ; initial end of (boot) source
 
-;;; That's all foks!!
+;;; That's all folks!!

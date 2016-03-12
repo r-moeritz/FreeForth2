@@ -39,11 +39,11 @@ constant` ' alias equ` \ shorter, and more usual for assembly programmers
 
 variable ior \ I/O result, error when negative:
 : ?ior 0- ior! \ n -- ; displays system error message
-  0< IF ior@ negate 1 libc. strerror 1 libc. puts  !"system_call_failed" THEN
+  0< IF ior@ negate 1 "strerror" libc_ 1 "puts" libc_ !"system_call_failed" THEN
 ;
 
-: malloc 1 libc. malloc    ; \ # -- @ ; see "man malloc"
-: free   1 libc. free drop ; \ @ --
+: malloc 1 "malloc" libc_    ; \ # -- @ ; see "man malloc"
+: free   1 "free" libc_ drop ; \ @ --
 
 \ syscall values see /usr/include/asm-i386/unistd.h
 : lseek  3  19 syscall ; \ wh off fd -- off ; wh=0:SET 1:CUR 2:END
@@ -275,7 +275,7 @@ create ts 64 allot
 
 : man` >in@ 4- lnparse + over- \ <mantopic> -- ; 4-:"man_" fallthru
 : shell  \ @ # -- ; send command to shell, command result into ior
-  zt 1 libc. system 0; ior! !"shell_call_failed"
+  zt 1 "system" libc_ 0; ior! !"shell_call_failed"
 : cd`    \ <newdir> -- ; change directory
   wsparse zt 1 12 syscall ?ior
 ;
