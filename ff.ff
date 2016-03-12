@@ -673,7 +673,7 @@ create COM \ UART current context
 \ . TIOCGSERIAL 541E  GetSERIAL
 \ . TIOCSSERIAL 541F  SetSERIAL
 \ - TCGETS/TCSETS (struct*termios)arg bits from /usr/include/asm/termbits.h:
-\ . c_cflag:              
+\ . c_cflag:
 \ CBAUD   $100F \ &10017   struct termios { // 25 bytes:
 \ B4800   $000C \ &00014     uint c_iflag;  // input   mode flags
 \ B9600   $000D \ &00015     uint c_oflag;  // output  mode flags

@@ -49,7 +49,7 @@ ff.boot is the FreeForth kernel extensions inlined source file
 ff.ff is the FreeForth kernel extensions separate source file
   automatically compiled at boot time after ff.boot if it is found:
   Lin(fflin.boot): either in "$HOME/ff/" (maybe a symbolic link) or in "./"
-  Win(ffwin.boot): either in "$FFROOT$" or in "C:\ff\" or in ".\" 
+  Win(ffwin.boot): either in "$FFROOT$" or in "C:\ff\" or in ".\"
   Edit ff.ff to enable([1]) or disable([0]) its optinal sections,
   or to add your own startup code, such as:  needs mystartup.ff
   see also: ff.asm ff.boot ff.help boot bed.ff hello open'

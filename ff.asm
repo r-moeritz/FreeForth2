@@ -179,7 +179,7 @@
 ;;;   More complex base changes are possible, as already implemented
 ;;;   for date and/or time conversion: 2006-5-6_17:42:15 (see _number)
 
-;;; FreeForth compiler generates efficient "subroutine-threaded" code with 
+;;; FreeForth compiler generates efficient "subroutine-threaded" code with
 ;;; primitives implemented as macros generating native 386 code inline:
 ;;; see the following "Compiler implementation notes".
 
@@ -196,7 +196,7 @@
 ;;; Yes, an online help documents all usable words, and even gives their
 ;;; source code (these comment mainly the boot source file, which is otherwise
 ;;; comment-less for executable-embedding compacity).
-	
+
 ;;; FreeForth is also designed with interactive umbilical cross-compilation
 ;;; in mind, with "host" and "target" compiler contexts switchings simpler
 ;;; than usual implementations (not yet implemented).
@@ -233,10 +233,10 @@
 ;;; . ebp is the compilation pointer (saved as "frame pointer" by system calls)
 
 ;;; The memory map is allocated as follows:
-;;; 
+;;;
 ;;; [binary code and data> heap <headers][source code> blocks][ ]  < stacks ]
 ;;; :                 ebp^      ^H    tib:  tin^>  tp^     eob: ;   eax^ esp^
-;;; 
+;;;
 ;;; Space is already allocated by the operating system's loader for the stack,
 ;;; with esp already pointing at its "bottom"; 4Kbytes are reserved for the
 ;;; CALLstack, and eax is initialized pointing at the DATAstack "bottom".
@@ -355,8 +355,8 @@ macro VECT name, entry {        ; vectorizable subroutine entry
         CODE name, entry
         push dword $+6          ; 68(push long)
         ret                     ; C3(ret)
-}   
-    
+}
+
 ;;; -------------------------------------------------------
 ;;; stack handling macros
 
@@ -387,7 +387,7 @@ macro DUP2 {                    ; x y -- x y x y
         push ebx                ; 53
         xchg eax,esp            ; 94
 }
-    
+
 ;;; -------------------------------------------------------
 ;;; compilation pointer macros
 
@@ -425,7 +425,7 @@ toC:    HDB $94                 ; C6450094  94(xchg eax,esp)
 CODE ">C1",toC1                 ; test&set CALLbit to setup esp=DATAsp
         bts [SC],0              ; 0FBA2D.SC.00
         jnc toC                 ; 73F0
-        ret     
+        ret
 CODE ">S0",toS0                 ; test&reset SWAPbit to setup ebx=TOS
         btr [SC],1              ; 0FBA35.SC.01
         jnc @f                  ; 7309
@@ -575,7 +575,7 @@ CODE "number",_number           ; @ # -- @ # | n 0
         pop eax
         pop ebp
         ret
-    
+
 .10:    xchg ecx,[accu]         ; gregorian date: y-m-d
         jecxz .4                ; ecx = year, accu = month
         xchg ecx,[accu]
@@ -613,7 +613,7 @@ CODE "number",_number           ; @ # -- @ # | n 0
         imul ecx,eax            ; shift accu, ready for next add
         mov [accu],ecx
         jmp .d
-    
+
 ;;;         0  1  2  3   4  5  6  7   8  9  A  B   C  D  E  F
 ;;;    00: NULSOHSTXETX EOTENQACKBEL BS HT LF VT  FF CR SO SI ; 0:error
 .ct     db  9, 0, 0, 0,  0, 0, 0, 0,  0, 9, 9, 9,  9, 9, 0, 0 ; 1:digit
@@ -628,10 +628,10 @@ CODE "number",_number           ; @ # -- @ # | n 0
 ;;;    50:  P  Q  R  S   T  U  V  W   X  Y  Z  [   \  ]  ^  _ ; 10:-date
         db  2, 2, 2, 2,  2, 2, 2, 2,  2, 2, 2, 0,  0, 0, 0,11 ; 11:_24
 ;;;    60:  `  a  b  c   d  e  f  g   h  i  j  k   l  m  n  o ; 12::60
-        db  0, 3, 3, 3,  3, 3, 3, 3,  3, 3, 3, 3,  3, 3, 3, 3 ; 
+        db  0, 3, 3, 3,  3, 3, 3, 3,  3, 3, 3, 3,  3, 3, 3, 3 ;
 ;;;    70:  p  q  r  s   t  u  v  w   x  y  z  {   |  }  ~ DEL;
-        db  3, 3, 3, 3,  3, 3, 3, 3,  3, 3, 3, 0,  0, 0, 0, 0 ; 
-    
+        db  3, 3, 3, 3,  3, 3, 3, 3,  3, 3, 3, 0,  0, 0, 0, 0 ;
+
 ;;; -------------------------------------------------------
 ;;; literal compiler: this is rich but quite simple
 
@@ -731,7 +731,7 @@ memcomma:                       ; @ # -- ; embed encoded data
 ;;; 30:  0  1  2  3  4  5  6  7  8  9  :  ;  <  =  >  ?  ignore every " quotes
 ;;; 40:  @  A  B  C  D  E  F  G  H  I  J  K  L  M  N  O
 ;;; 50:  P  Q  R  S  T  U  V  W  X  Y  Z  [ \\  ] \^ \_  prefix special with \
-;;; 60:  `  a  b  c  d  e  f  g  h  i  j  k  l  m  n  o  
+;;; 60:  `  a  b  c  d  e  f  g  h  i  j  k  l  m  n  o
 ;;; 70:  p  q  r  s  t  u  v  w  x  y  z  {  |  } \~ ^?  suffix ~ toggles bit7
 
 lit8:   lea esi,[ebx+ebx]       ; check byte/long literal:
@@ -819,7 +819,7 @@ litstore:                       ; @ # --
         call s08
         call comma
         jmp _drop
-    
+
 notfnd: inc ebx                 ; restore final
         pop ecx                 ; don't return from litnumd/litdata caller
 VECT "notfound",_notfound       ; @ # -- ;
@@ -851,7 +851,7 @@ comma:  HDD ebx
         add ebp,4
 _drop1: DROP1                   ; --
         ret
-    
+
 ;;; -------------------------------------------------------
 ;;; compiler kernel
 
@@ -869,8 +869,8 @@ CODE ";;`",_semisemi            ; --
         cmp ebp,[callmark]      ; preceded by a call?
         jnz .ret
         cmp dword[ebp-4],-$83   ; test for short jump offset
-        jl @f                   ; 
-        sub ebp,3               ; 
+        jl @f                   ;
+        sub ebp,3               ;
         add byte[ebp-1],3       ; offset correction
         HDB $EB,-2              ; EB(jmp byte)
         jmp _anon.0
@@ -878,7 +878,7 @@ CODE ";;`",_semisemi            ; --
         jmp _anon.0
 .ret:   call _rst               ; ebp=[P]
         HDB $C3                 ; C3(ret)
-        inc ebp                 ; 
+        inc ebp                 ;
         ret
 
 DATA "anon",anon,ebp0
@@ -988,7 +988,7 @@ CODE "wsparse",_wsparse         ; -- @ # ; white-space-parse
         jnz @b
 .error: call _error
         CDB "unexpected end of source"
-    
+
 CODE "parse",_parse             ; separator -- @ #
         DUP1
         xchg eax,ebx            ; eax=separator ebx=dataSP
@@ -1079,7 +1079,7 @@ CODE "fill",_fill               ; @ # byte --
         pop edx
         xchg eax,esp
         ret
-    
+
 CODE "move",_move               ; @src @dst # -- ; safe memory-block-move
         xchg eax,esp
         pop esi                 ; esi = @src
@@ -1148,7 +1148,7 @@ CODE "depth",_depth             ; -- n
 .patch: mov ebx,-4              ; BB immediate, patched at ffboot
         sub ebx,eax
         sar ebx,2
-        ret     
+        ret
 
 ;;; -------------------------------------------------------
 ;;; startup code: relocate headers from ebp^ to ^H
