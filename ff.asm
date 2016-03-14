@@ -1152,6 +1152,22 @@ CODE "search",_search           ; @ # @k #k -- @r #r ; z:match, nz:fail
         xchg eax,esp
         ret
 
+;; count a nul terminated string, keep the address
+;; eg. "HOME" 1_ libc. getenv zlen type
+CODE "zlen",zlen                ; @ -- @ #
+        DUP1
+        mov edi,edx
+        xor ecx,ecx
+        not ecx
+        push eax
+        xor eax,eax
+        repne scasb
+        pop eax
+        not ecx
+        dec ecx
+        mov ebx,ecx
+        ret
+
 CODE "depth",_depth             ; -- n
         DUP1
         mov ebx,[DS0]

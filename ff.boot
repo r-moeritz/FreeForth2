@@ -141,6 +141,7 @@ variable `?#
 : @^` -call over` $1D8B, s08 1+ , ;
 : !^` -call $1D89, s08 1+ , drop` ;
 : ^^` -call $05C7, ,2 dup 1+ , 6+ , ;
+: n^` -call $05C7, ,2 , $441F0F , ;
 : lib:` :` #lib lit` #fun ' call, ;` ;
 : fun:` :` lit` lit` #call ' call, ;` ;
 
@@ -247,11 +248,10 @@ variable base 10 base!
   dup 32 swap c! 1+ dup ';' swap c! 1+ 10 swap c! 2+ THEN REPEAT ;
 : bye` ;` cr 0 exit ;
 : help` !"Can't_find_file_ff.ff_needed_for_help!"
-: `boot ossetup 2dup+ tp! over >in! wsparse + tp@ over- tuck tib place swap `eval
-  `top ;
+:^ doargv 2dup+ tp! over zlen + tp@ over- tuck tib place swap `eval ;
+: `boot ossetup doargv `top ;
 `boot ' `bootxt! ;
 
-variable `mainxt
-: `main `mainxt@ execute 0 exit ;
-: -f` needs` "main" find 0- 0= drop IF `mainxt! `main ' `top !^ ELSE drop THEN ;
+here 0 , dup : `main lit @ execute 0 exit
+: -f` lit needs` "main" find 0- 0= drop IF swap ! `main ' `top !^ ELSE 2drop THEN ;
 : quit `top ^^ `top ;
