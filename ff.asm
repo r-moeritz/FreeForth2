@@ -415,7 +415,8 @@ macro POSTPN target {           ; target may be literal or register (unchanged)
 
 DATA "H",H,H0                   ; headers
 DATA "anon",anon,ebp0
-DATA "`DS0",DS0,0               ; DATAstack base address, set later
+DATA "CS0",CS0,0                ; CALLstack base address, set later
+DATA "DS0",DS0,0                ; DATAstack base address, set later
 DATA "`bssend",bssend,0
 DATA "`bootxt",bootxt,0
 DATA "libc",_libc,0
@@ -1182,7 +1183,7 @@ CODE "depth",_depth             ; -- n
 ;;; [binary code and data> heap <headers][source code> blocks][ ]  < stacks ]
 ;;; :                 ebp^      ^H    tib:  tin^>  tp^     eob: ;   eax^ esp^
 
-ffboot: ;; relocate headers and boot source: H->[headers]tib:[boot]<-tp
+_start: ;; relocate headers and boot source: H->[headers]tib:[boot]<-tp
         mov esi,heads
         mov edi,H0
         mov ecx,(headers_size+boot_size)/4
@@ -1198,9 +1199,12 @@ ffboot: ;; relocate headers and boot source: H->[headers]tib:[boot]<-tp
         ;; initialize compiler pointer registers:
         mov ebp,ebp0            ; compilation pointer
         lea eax,[esp-4096]      ; allocate CALLstack
+        mov [CS0],esp           ; save for argv
         mov [DS0],-4
         add [DS0],eax           ; relocate DATAstack base address
         mov [bssend],_bssend-4
+        xor ebx,ebx
+        xor edx,edx
         ;; compile boot source:
 if 1    ;; 0 allows ff.boot debugging, 1 saves 160 bytes
         jmp _compiler

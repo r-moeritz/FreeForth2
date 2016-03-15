@@ -201,19 +201,4 @@ end if
         ;; prot: PROT_READ=1 PROT_WRITE=2 PROT_EXEC=4
         ;; flags: MAP_SHARED=1 MAP_PRIVATE=2 MAP_FIXED=10 MAP_ANONYMOUS=20
 
-;;; -------------------------------------------------------
-;;; startup code:
-
-_start: ;; get argc and args (passed from shell command line):
-        ;; (arguments strings are passed null-terminated and concatenated)
-        pop ecx                 ; command line arguments number
-        pop edx                 ; command line string base address
-        mov ebx,edx
-@@:     inc ebx
-        cmp byte[ebx],0         ; each arg is zero-terminated
-        jnz @b
-        loop @b                 ; downcount arguments
-        sub ebx,edx             ; -- args argslen
-        jmp ffboot
-
 ;;; That's all folks!!

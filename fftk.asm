@@ -7,7 +7,7 @@ cmpl:   file "cmpl"
 ;; perform header, ebp, and eax init same as ff.asm
 ;; overwrite values at beginning of image with
 ;; values specific to this build or run
-ffboot:
+_start:
         mov esi,heads           ; relocate headers
         mov edi,H0
         mov ecx,headers_size/4
@@ -16,25 +16,16 @@ ffboot:
         lea eax,[esp-4096]      ; allocate CALLstack
         mov [cmpl],dword H0     ; set H to H0
         mov [cmpl+4],dword ebp0 ; set anon to ebp0
+        mov [cmpl+8],esp        ; save for argv
         mov ecx,-4
         add ecx,eax
-        mov [cmpl+8],ecx        ; depth fix
-        mov [cmpl+12],dword _bssend ; set immed in #call
-        mov [cmpl+20],dword 0   ; zero libc value, must run dlopen
-        mov ecx,[cmpl+16]       ; `boot
+        mov [cmpl+12],ecx        ; depth fix
+        mov [cmpl+16],dword _bssend ; set immed in #call
+        mov ecx,[cmpl+20]       ; `boot
+        mov [cmpl+24],dword 0   ; zero libc value, must run dlopen
+        xor ebx,ebx
+        xor edx,edx
         jmp ecx
-
-;; argument processing same as ff.asm
-_start:
-        pop ecx
-        pop edx
-        mov ebx,edx
-@@:     inc ebx
-        cmp byte[ebx],0
-        jnz @b
-        loop @b
-        sub ebx,edx
-        jmp ffboot
 
 ;; convince linker to provide dl*
 extrn dlopen
