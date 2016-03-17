@@ -499,7 +499,7 @@ variable utrace  \ default 0: no trace
       $7E_ <= IF $20_ >= IF : `e drop emit AGAIN 13_ = `e ? 10_ = `e ? THEN
     THEN '\'_ emit .b AGAIN
     here dup 256 accept \ -- here n ; Lin:here+n-1:^J Win:here+n-2:^M^J
-    over+ 1- [os] [IF] 13 [ELSE] 0 [THEN] swap ! \ EOL:^M^@^@^@
+    over+ 1- 13 swap ! \ EOL:^M^@^@^@
     BEGIN c@+ 0- WHILE \ -- @ c
       '^' CASE c@+ $40^ ELSE \ -- @ c ; "^c":control-char
       '\' CASE dup 2+ swap 1- '$' overc! 3 number \ -- @+2 n 0 ; "\xx":hexa

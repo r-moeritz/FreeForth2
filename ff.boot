@@ -227,13 +227,6 @@ variable base 10 base!
 : mark` ;` wsparse
 : marker 2dup+ dupc@ >r dup>r '`' swap c! 1+
   here 0 header 2r> c!  `mark ' call, anon:` ;
-
-: needs` ;` wsparse
-: needed 2dup+ dupc@ >r dup>r '`' swap c! 1+ find 2r> c! 0= IF 2drop ;THEN 1-
-  2dup openr 0- 0< IF drop type !"Can't_open_file." ;THEN
-  >r marker tp@ eob over- under r read r> close drop
-  over w@ [ "#!" drop w@ ] lit = 2drop
-  IF bounds BEGIN c@+ 10- 0= drop UNTIL swap over- THEN
 : eval >in@ tp@ 2>r over+ tp! >in! compiler 2r> tp! >in! ;
 
 : argc CS0@ @ ;
@@ -254,7 +247,3 @@ variable base 10 base!
 :^ doargv argc 1- 0; 1 `argv swap 2+ `argv over- tuck tib place swap `eval ;
 : `boot ossetup doargv `top ;
 `boot ' `bootxt! ;
-
-here 0 , dup : `main lit @ execute 0 exit
-: -f` lit needs` "main" find 0- 0= drop IF swap ! `main ' `top !^ ELSE 2drop THEN ;
-: quit `top ^^ `top ;

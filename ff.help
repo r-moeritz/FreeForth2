@@ -1,5 +1,4 @@
 \ ff.help
-\ $Id: ff.help,v 1.21 2010-01-04 16:23:06 lavarec Exp $
 \ This help file begins with the help source code, followed by the help
 \ contents, composed of help records, each starting with a line beginning
 \ with a keyword (help entry), and ending with an empty line, with maybe
@@ -47,12 +46,14 @@ ff.boot is the FreeForth kernel extensions inlined source file
   assembled by fasm in the ff executable and compiled at boot time.
   see also: fflin.boot ffwin.boot
 ff.ff is the FreeForth kernel extensions separate source file
-  automatically compiled at boot time after ff.boot if it is found:
-  Lin(fflin.boot): either in "$HOME/ff/" (maybe a symbolic link) or in "./"
-  Win(ffwin.boot): either in "$FFROOT$" or in "C:\ff\" or in ".\"
-  Edit ff.ff to enable([1]) or disable([0]) its optinal sections,
+  automatically compiled at boot time after ff.boot if it is found.
+  The environment variable FFPATH specifies a colon-separated list of
+  directories that are searched, followed by "/usr/local/share/ff" and ".".
+full.ff has additional FreeForth kernel extensions for special uses.
+  Load it as desired (i.e. needs full.ff).
+  Edit full.ff to enable([1]) or disable([0]) its optional sections,
   or to add your own startup code, such as:  needs mystartup.ff
-  see also: ff.asm ff.boot ff.help boot bed.ff hello open'
+  see also: ff.asm ff.boot ff.help boot bed.ff hello needs
 
 fflin.asm is the Linux-port main assembler source file
 fflinio.asm is the assembler source file for Linux-specific I/O
@@ -371,13 +372,13 @@ max` ( n2 n1 -- n ) returns the maximum of two signed numbers
 within ( n x y -- ; nz? ) if x=<n<y or(y=<x and(n<y or x=<n)), returns nzTRUE
   (i.e. i386 Z flag reset), otherwise returns zFALSE (i.e. Z flag set).
   This works for both unsigned and signed integers (but not a mixture).
-  Another way to think about "whitin" is to consider the integers set as
+  Another way to think about "within" is to consider the integers set as
   a circle wrapping around from MAXINT (-1+2^32 unsigned, -1+2^31 signed)
   to MININT (0 unsigned, -2^31 signed); now consider the increasing range
   from x upto and excluding y (giving an empty range if x=y):
   if n is in this range, "within" returns nzTRUE, otherwise zFALSE.
   : within over- -rot - u> 2drop nzTRUE ? zFALSE ;
-  see also: min max BOOL conditionnals  ff.ff
+  see also: min max BOOL conditionals  ff.ff
 
 bounds` ( @ # -- @+# @ ) converts start address "@" under count "#"
   into limit address "@+#" under start address
@@ -505,7 +506,7 @@ $- ( @1 @2 # -- n ) compares the string starting at address "@1" with
   see also: move place fill search  ff.asm
 
 search ( @ # @' #' -- @r #r ; z:match ) in the string starting at address "@"
-  for "#" bytes, search the first occurence of string starting at address "@'"
+  for "#" bytes, search the first occurrence of string starting at address "@'"
   for "#'" bytes; if a matching substring is found, returns its base address
   and the remaining searched-string count of bytes and the i386 Z flag set;
   otherwise returns the original searched string address and size and the
@@ -541,7 +542,7 @@ callmark ( -- @ ) compiler state variable: stores the value that the
   see also: call, ;; compiler THEN  ff.asm
 
 ;;` ( -- ) compiles a "ret" instruction, unless the last compiled instruction
-  was a "call", which is instead changed to an unconditionnal jump (short
+  was a "call", which is instead changed to an unconditional jump (short
   or long depending on the call offset): this is called "tail recursion"
   optimization, which often simplifies control structures; this may be
   switched off/on permanently by storing a null/non-null value into "tailrec",
@@ -734,10 +735,10 @@ literalcompiler is invoked by the compiler when it can't find in its
   see also: compiler wsparse find notfound type here  ff.asm
 
 stringcompiler is invoked by the compiler when a literal is terminated by a "
-," i.e. string with final '"' and initial ',': ,XYZ"
+," i.e. string with final '"' and initial ',"': ,"XYZ"
   compiles the string with no count and no preceding call
   (this is useful to compile inline any data and/or code)
-!" i.e. string with final '"' and initial '!': !XYZ"
+!" i.e. string with final '"' and initial '!"': !"XYZ"
   compiles a counted string preceded by a call to a hidden runtime
   which will call "throw" with the counted-string address in TOS;
   if not catched, the exception will display: <-error: XYZ
@@ -745,29 +746,25 @@ stringcompiler is invoked by the compiler when a literal is terminated by a "
   compiles a counted string preceded by a call to a hidden runtime
   which will push onto the DATAstack the string address and count (-- @ #)
   and will continue execution after the compiled string
-." i.e. string with final '"' and initial '.': .XYZ"
+." i.e. string with final '"' and initial '."': ."XYZ"
   compiles a counted string preceded by a call to a hidden runtime
   which will push onto the DATAstack the string address and count,
   will call "type", and continue execution after the compiled string
   Note: some characters, between the initial and final, are interpreted
   by the literal-string compiler:
-  _ is substituted by a space (source strings must have no embedded space)
+  _ is substituted by a space
   ^ toggles bit6 of following character (^@=0 ^A=1 ^B=2 ... ^?=127)
   ~ toggles bit7 of last compiled byte  (@~=$C0 A~=$C1 and ^@~=$80)
-  " is simply ignored (."hello" = .hello")
-  \ compiles the next character literally (\_=_ \^=^ \~=~ \"=" \\=\)
-  Note: a source string must have no embedded space, such that FreeForth
-        compiler can "wsparse" it all at once; in your source strings,
-        substitute every space with an underscore, that "stringcompiler"
-        will in turn compile as a space, and use "\_" for every underscore.
+  \ compiles the next character literally (\_=_ \^=^ \~=~ \\=\)
+  Note: double quotes must be balanced. To embed a quote, use ^b.
   see also: literalcompiler stringcodes  ff.asm
 
 stringcodes in quoted source strings (compiled by stringcompiler)
        0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
   00: ^@ ^A ^B ^C ^D ^E ^F ^G ^H ^I ^J ^K ^L ^M ^N ^O
   10: ^P ^Q ^R ^S ^T ^U ^V ^W ^X ^Y ^Z ^[ ^\ ^] ^^ ^_  prefix ^ toggles bit6
-  20:  _  ! \"  #  $  %  &  '  (  )  *  +  ,  -  .  /  replace spaces with _
-  30:  0  1  2  3  4  5  6  7  8  9  :  ;  <  =  >  ?  ignore every " quotes
+  20:  _  ! ^b  #  $  %  &  '  (  )  *  +  ,  -  .  /
+  30:  0  1  2  3  4  5  6  7  8  9  :  ;  <  =  >  ?
   40:  @  A  B  C  D  E  F  G  H  I  J  K  L  M  N  O
   50:  P  Q  R  S  T  U  V  W  X  Y  Z  [ \\  ] \^ \_  prefix special with \
   60:  `  a  b  c  d  e  f  g  h  i  j  k  l  m  n  o
@@ -840,7 +837,7 @@ classes ( -- @ ) base address of the compiler's classes table, indexed by
   otherwise it's another entry point in an already open named definition,
   then calls "rst" to reset default registers allocation on entry, then
   finally points the created header on the address in the compilation pointer.
-  Typically, use ":" to create a new enty point in code; as headers are
+  Typically, use ":" to create a new entry point in code; as headers are
   separate, there may be several entry points sharing the same exit point(s);
   some entry points may also be used as target for "tail recursion"
   source code in ff.asm, functionally equivalent to:
@@ -884,7 +881,7 @@ equ` ( n <name> -- ; -- n ) a shorter, assembly friendly, alias for constant
   calls ":" and compiles default redirection code pointing just after itself
   (push $+6 ret), as also does "^^"
   : :^` :` $68 c, here 5+ , $C3 c, ; \ push long  ret
-  see also: : :^ @^ ' !^ ^^  ff.boot
+  see also: : :^ @^ ' !^ ^^ n^  ff.boot
 
 ^^` ( -- ) resets vector: if a call was compiled just before, converts it
   to runtime code which will reset the vector target address to its default,
@@ -892,21 +889,29 @@ equ` ( n <name> -- ; -- n ) a shorter, assembly friendly, alias for constant
   redirection code; otherwise throws an exception with error message
   "is not preceded by a call".
   : ^^` -call $05C7, 2 allot dup 1+ , 6+ , ; \ mov[],long
-  see also: :^ @^ !^ ^^  ff.boot
+  see also: :^ @^ !^ ^^ n^  ff.boot
 
 !^` ( @ -- ) sets vector contents: if a call was compiled just before,
   converts it to runtime code which will set the vector target address
   from TOS; otherwise throws an exception with error message
   "is not preceded by a call".
   : !^` -call $1D89, s08 1+ , drop` ; \ mov [],ebx
-  see also: :^ @^ !^ ^^  ff.boot
+  see also: :^ @^ !^ ^^ n^  ff.boot
 
 @^` ( -- @ ) gets vector contents: if a call was compiled just before,
   converts it to runtime code which will read the vector target address
   and will push it onto the DATAstack; otherwise throws an exception
   with error message "is not preceded by a call".
   : @^` -call over` $1D8B, s08 1+ , ; \ mov ebx,[]
-  see also: :^ @^ !^ ^^  ff.boot
+  see also: :^ @^ !^ ^^ n^  ff.boot
+
+n^` ( -- ) disables vector contents: if a call was compiled just before,
+  converts it to runtime code which will replace the initial call
+  in the vector with a nop, so the vector simply returns when called;
+  otherwise throws an exception with error message
+  "is not preceded by a call".
+  : n^` -call $05C7, ,2 , $441F0F , ; \ mov [],nop
+  see also: :^ @^ !^ ^^ n^  ff.boot
 
   ------------
   FLOW-CONTROL
@@ -978,7 +983,7 @@ conditionals  Usual Forth systems compute boolean values as integers
      (this saves a lot of DATAstack push/pops)
   4) select the conditional jump target address either directly with "?",
      or indirectly with structured-control words such as "IF", "WHILE" etc.
-  Comparing words ("<" ">=" "u<" etc) realise points 1 and 2 at once: point 1
+  Comparing words ("<" ">=" "u<" etc) realize points 1 and 2 at once: point 1
   by compiling a "cmp edx,ebx" instruction (which sets the condition-flags)
   which compares NOS relative to TOS, point 2 by storing the conditional-jump
   opcode into a compiler variable.
@@ -991,7 +996,7 @@ conditionals  Usual Forth systems compute boolean values as integers
   "normalized" with nzTRUE or zFALSE (which resp. sets or clears the i386
   Zero status flag) for a following direct use by IF/WHILE/TILL/UNTIL.
   Whenever a flag must be passed on DATAstack or stored into memory,
-  use "BOOL" to convert it to an interger pushed onto DATAstack.
+  use "BOOL" to convert it to an integer pushed onto DATAstack.
   see also: flow-control +longconds
 
 +longconds` ( -- ) ff.boot default conditionals are limited to byte offsets
@@ -1001,7 +1006,7 @@ conditionals  Usual Forth systems compute boolean values as integers
   offsets, +longconds` switches to long forward conditionals
 -longconds` ( -- ) switches back from +longconds` to byte forward conditionals
   WARNING: DON'T switch forth and back in the middle of a control structure!
-  see also: conditionals flow-control  ff.ff
+  see also: conditionals flow-control  full.ff
 
 ?` ( -- ) expects the instruction compiled just before it to be a "call",
   that it converts into a conditional jump instruction, which condition
@@ -1196,7 +1201,7 @@ if`    ( ? -- ) non-null  : if`    $840F if1\ ; \ jz.long
   then continue execution after "if", otherwise jump forward after balancing
   "else" or "then" or ";then"
 if1\ : if1\ $DB09, s09  drop` w, here SC @ , ; \ or ebx,ebx
-  see also: if =if  ff.ff \ Retro/Reva/HelFORTH compat
+  see also: if =if  full.ff \ Retro/Reva/HelFORTH compat
 
 =if`   ( x y -- ) equal        : =if`   $850F if2\ ; \ jnz.long
 <>if`  ( x y -- ) non-equal    : <>if`  $840F if2\ ; \ jz.long
@@ -1208,7 +1213,7 @@ u<=if` ( x y -- ) non-above    : u<=if` $870F if2\ ; \ ja.long
   and if condition is true, then continue execution after "if", otherwise
   jump forward after balancing "else" or "then" or ";then"
 if2\ : if2\ $DA39, s09 2drop` w, here SC @ , ; \ cmp edx,ebx
-  see also: =if if  ff.ff \ Retro/Reva/HelFORTH compat
+  see also: =if if  full.ff \ Retro/Reva/HelFORTH compat
 
 then` ( -- ) resolves the target address of the balancing forward jump
   (i.e. either "else" or any kind of "if")
@@ -1218,13 +1223,13 @@ then` ( -- ) resolves the target address of the balancing forward jump
   then resolves the target address of the balancing forward jump
   (i.e. either "else" or any kind of "if")
   : then;` ;;` dup@ SC ! then` ;
-  see also: then if else  ff.ff \ Retro/Reva/HelFORTH compat
+  see also: then if else  full.ff \ Retro/Reva/HelFORTH compat
 
 else` ( -- ) jumps forward after balancing "then" or ";then", and also
   resolves the target address of the balancing forward conditional jump
   (i.e. any kind of "if")
   : else` $E9 c, here SC @ , swap then` ; \ jmp.long
-  see also: if else then ;then  ff.ff \ Retro/Reva/HelFORTH compat
+  see also: if else then ;then  full.ff \ Retro/Reva/HelFORTH compat
 
 again` ( -- ) closes a non-counted loop by compiling an unconditional jump
   to the address noted by "repeat"; to exit the loop, use any number of
@@ -1232,7 +1237,7 @@ again` ( -- ) closes a non-counted loop by compiling an unconditional jump
   : again` >SC 0 SC !
     here - dup -$7E <if $E9 c, 5- , ;then \ jmp.long
     $EB c, 2- c, ; \ jmp.b
-  see also: repeat 0; again while  ff.ff \ Retro/Reva/HelFORTH compat
+  see also: repeat 0; again while  full.ff \ Retro/Reva/HelFORTH compat
 
 while` ( ? -- ) closes a non-counted loop by compiling a conditional jump
   (which will pop TOS and jump if null) back to the address noted by
@@ -1241,12 +1246,12 @@ while` ( ? -- ) closes a non-counted loop by compiling a conditional jump
   : while` $DB09, s09 drop` >SC \ or ebx,ebx
     here - dup -$7E <if $850F w, 6- , ;then \ jnz.long
     $75 c, 2- c, ; \ jnz.b
-  see also: repeat 0; again while  ff.ff \ Retro/Reva/HelFORTH compat
+  see also: repeat 0; again while  full.ff \ Retro/Reva/HelFORTH compat
 
 repeat` ( -- ) opens a non-counted loop by noting the current compilation
   address for later resolution by either "again" or "while"
   : repeat` here SC @ ;
-  see also: repeat 0; again while  for next  ff.ff \ Retro/Reva/HelFORTH compat
+  see also: repeat 0; again while  for next  full.ff \ Retro/Reva/HelFORTH compat
 
 for` ( n -- | == n ) opens a counted loop by compiling a ">r" and noting the
   following compilation address for later resolution by the balancing "next"
@@ -1259,7 +1264,7 @@ next` ( -- | n == n-1 | 1 == ) closes a counted loop by compiling code
   downto 1; to push on the DATAstack a copy of the loop index, use "r"
   : next` >SC here - dup -$7C <if $8F0F08FF , 8- , rdrop` ;then \ dec[eax] jg.l
     $FC7F08FF , here 1- +! rdrop` ; \ dec[eax] jg.b
-  see also: for r next  ff.ff \ Retro/Reva/HelFORTH compatibility
+  see also: for r next  full.ff \ Retro/Reva/HelFORTH compatibility
 
   -----------------------
   CONDITIONAL COMPILATION control-structures
@@ -1290,7 +1295,7 @@ next` ( -- | n == n-1 | 1 == ) closes a counted loop by compiling code
   see also: [0] [1] [~] [IF] [ELSE] [THEN] [os]  ff.boot
 
 [os]` ( -- ? ) macro-constant, returns 1 for Linux, 0 for Windows
-  tipically used before [IF] to compile OS-specific code
+  typically used before [IF] to compile OS-specific code
   1 constant [os]`  \ Linux
   0 constant [os]`  \ Windows
   see also: libc k32 boot  fflin.boot/ffwin.boot
@@ -1302,7 +1307,7 @@ syscall ( ... #args syscall# -- ior ) requests Linux to execute
   the system-call number "syscall#", using "#args" number of arguments
   popped from DATAstack (if greater than 6, throws the exception error
   message "syscall#args>6"); returns the result "ior",
-  which is negative if an error occured
+  which is negative if an error occurred
   see /usr/include/asm/unistd.h for syscall#, see man for arglist
   see also: openr openw read write close  fflinio.asm
 
@@ -1312,48 +1317,46 @@ stdout ( -- n ) constant: returns the console output file-descriptor/handle
   Win: these constants are initialized at startup (with GetStdHandle)
   see also: stdin accept type  fflinio.asm/ffwinio.asm
 
-open' ( -- @ ) 64-bytes variable: holds a counted string, initialized at boot
-  with the path to the FreeForth install/root-directory:
-  Linux: $HOME/ff/ (maybe a symbolic-link)
-  Windows: $FFROOT$ (must end with a "\") or C:\ff\ by default
-  openr and openw use it to substitute a filename-initial single-quote "'"
-  by appending the filename-without-initial to open' string and then using
-  open'+1 as null-terminated string for the operating-system open-call
-  (for example "'ff.ff" is expanded to "$HOME/ff/ff.ff" or "C:\\ff\\ff.ff")
-  see also: openr openw  fflinio.asm/ffwinio.asm
+ffpath ( -- @ ) variable holding the library search path populated at boot
+  from the environment variable FFPATH and the defaults ("/usr/local/share/ff"
+  and "."). Each directory is preceded by its length stored as a byte.
+open' ( -- @ ) 80-bytes variable: used by openlib to concatenate a directory
+  from ffpath with the filename to be opened when searching.
+openlib ( @ # -- fd ) If the filename starts with "/", "./", or "../"
+  then openr is called; otherwise, each directory from ffpath is concatenated
+  with the filename and openr is attempted until one succeeds or all the
+  directories from ffpath have been tried. This is used by needs and needed.
+  see also: openr needs needed  fflinio.asm
 
 openr ( @ # -- fd ) requests the operating system to open the _existing_ file,
   which pathname starts at address "@" for "#" bytes, for read-only access;
-  if the first byte at "@" is a "'", it is substituted with "open'" string;
   if the file doesn't exist, openr fails;
   "fd" is the returned "file-descriptor"(Linux) or "file-handle"(Windows),
   to be used by "read" "close", which is negative if "openr" failed to find
   or open the file.
   Lin: openr zt &644 0 rot 3 5 syscall ;
   Win: see ffwinio.asm
-  see also: open' openw openw0 read write close syscall  fflinio.asm/ffwinio.asm
+  see also: openw openw0 read write close syscall  fflinio.asm/ffwinio.asm
 
 openw ( @ # -- fd ) requests the operating system to open the file, which
   pathname starts at address "@" for "#" bytes, for read-write access;
-  if the first byte at "@" is a "'", it is substituted with "open'" string;
   if the file exists, it keeps its length, otherwise openw creates it;
   "fd" is the returned "file-descriptor"(Linux) or "file-handle"(Windows),
   to be used by "read" "write" "close", which is negative if "openw" failed
   to open or create the file.
   Lin: openw zt &644 $42 rot 3 5 syscall ;
   Win: see ffwinio.asm
-  see also: open' openr openw0 read write close syscall  fflinio.asm/ffwinio.asm
+  see also: openr openw0 read write close syscall  fflinio.asm/ffwinio.asm
 
 openw0 ( @ # -- fd ) requests the operating system to open the file, which
   pathname starts at address "@" for "#" bytes, for read-write access;
-  if the first byte at "@" is a "'", it is substituted with "open'" string;
   if the file exists, it is truncated to length 0, otherwise it is created;
   "fd" is the returned "file-descriptor"(Linux) or "file-handle"(Windows),
   to be used by "read" "write" "close", which is negative if "openw" failed
   to open or create the file.
   Lin: openw zt &644 $42 rot 3 5 syscall ;
   Win: see ffwinio.asm
-  see also: open' openr openw read write close syscall  fflinio.asm/ffwinio.asm
+  see also: openr openw read write close syscall  fflinio.asm/ffwinio.asm
 
 close ( fd -- ? ) requests the operating system to close the file-descriptor
   "fd"; returns null if success, or a negative value if "close" failed
@@ -1364,8 +1367,8 @@ close ( fd -- ? ) requests the operating system to close the file-descriptor
 read ( @ # fd -- n ) requests the operating system to read the next
   "#" bytes from the file specified by the file-descriptor "fd", and
   to write them into memory starting from address "@" (see man 2 read);
-  returns "n" negative if an error occured, otherwise returns the number
-  of bytes effectively transfered, which may be less than "#" in case
+  returns "n" negative if an error occurred, otherwise returns the number
+  of bytes effectively transferred, which may be less than "#" in case
   the end-of-file was reached
   Lin: read 3 3 syscall ;
   Win: see ffwinio.asm
@@ -1374,7 +1377,7 @@ read ( @ # fd -- n ) requests the operating system to read the next
 write ( @ # fd -- n ) request the operating system to write into (i.e.
   append at the end of) the file specified by the file-descriptor "fd",
   "#" bytes read from memory starting from address "@" (see man 2 write);
-  returns "n" negative if an error occured, otherwise returns the number
+  returns "n" negative if an error occurred, otherwise returns the number
   of bytes effectively written to the file, usually equal to "#" (unless
   the file system partition is full).
   Lin: write 3 4 syscall ;
@@ -1505,7 +1508,7 @@ dump ( @ # -- ) displays an hexadecimal memory dump of # bytes
   hit the Enter key), proceed with the 16 next bytes; otherwise (hit a
   space before Enter) returns
   : ;dump` ;` BEGIN 16 bounds under 2dump stopdump? UNTIL drop ;
-stopdump? ( -- ; nz? ) check wether we are at end of user input:
+stopdump? ( -- ; nz? ) check whether we are at end of user input:
   Linux receives LF at each end-of-line, whereas Windows receives CR+LF
   : stopdump? [os] [IF] key 10- [ELSE] key 13- key 10- | [THEN] drop ;
   see also: ;dump dump .h .s  ff.ff
@@ -1589,19 +1592,27 @@ loc:` ( -- ) appends to the symbol table a ";loc`" macro header, which,
 needs` ( <filename> -- ) this is a commodity to avoid typing: "file" needed
   This is also used to make a source file auto-executable by Linux shell,
   by inserting a first line with "#!ff needs" (see example in file hello).
+  Use -f` instead of needs to change startup behavior (see below).
   : needs` ;` wsparse needed ;
 needed ( @ # -- ) compiles a file unless already compiled:
   finds the filename string at "@" address for "#" characters;
   looks in the compiler symbol table for a header with a name matching
   the filename with an appended backquote, marking that the file was
   already compiled, so if found simply returns;
-  otherwise opens the file (or throws an exception if it can't be open),
+  otherwise opens the file (possibly searching for it using directories
+  in ffpath, or throws an exception if it can't be opened),
   creates a self-forgetting mark (see "marker") with the filename,
   loads the file's full contents in memory at the address in "tp",
   and closes the file; then skips the first source line if it begins
   with the shell "#!" mark, and finally calls "eval" on the file's
   remaining contents.
-  see also: needs openr marker read close mark eval tp  ff.boot
+-f` ( <filename> -- ) performs needs, and then looks for a "main" word.
+  If found, it will be used in place of the interactive loop. A script
+  starting with "#!/bin/ff -f" can define words to do simple argument
+  processing with main called after all arguments are handled. Once
+  main returns, 0 exit is called. This is also used to make turnkey
+  executables.
+  see also: needs openlib ffpath openr marker read close mark eval tp turnkey ff.boot
 
 eval ( @ # -- ) compiles a source from base address "@" for "#" characters
   : eval >in@ tp@ 2>r  over+ tp! >in!  compiler  2r> tp! >in! ;
@@ -1617,6 +1628,22 @@ boot At startup, the FreeForth executable first compiles its binary-embedded
   immediately executing macros and anonymous definitions finished by ";",
   until "bye" is executed.
   see also: ff.boot ff.ff ff.help bed.ff hello
+
+-v` *TODO*
+
+turnkey *TODO* (update boot entry too)
+
+doargv *TODO*
+
+argc *TODO*
+
+argv *TODO*
+
+append *TODO*
+
+see *TODO* disassemble a word
+  0; needs see
+  0; see swap`
 
 bye` ( -- ) requests the operating system to terminate the FreeForth session
   with a null return value
@@ -1680,10 +1707,13 @@ man` ( <toEOL> -- ) parses to end-of-line and passes it to the shell command
   : man` >in@ 4- lnparse + over- shell ; \ 4-:"man_"
   see also: libc. lib: fun: ?ior man  fflin.boot
 
+libc_ *TODO*  contrast with libc.
+  see also: turnkey
+
 k32.` ( N <name> -- ; argN ... arg1 -- result ) compiles inline a harness
   calling the kernel32 function named "name" taking "N" arguments, which must
   be pushed on DATAstack in the same order as in C, i.e. C-prototype (see
-  win32.hlp) rightmost argument first, lefmost last; the N arguments are
+  win32.hlp) rightmost argument first, leftmost last; the N arguments are
   consumed by the function, which returns a single result on top of DATAstack.
   Note that some functions must be passed with an appended "A" to their name
   (examples in ff.ff), see fasm/INCLUDE/APIA/KERNEL32.INC for these names.
@@ -1708,7 +1738,7 @@ ior ( -- @ ) variable used by "?ior"
     value into "ior", then calls FormatMessage to display the error message;
     "?ior" use depends on Windows system call return type:
     if it's BOOL (0=false=error, 1=true=ok), use "1- ?ior" (-1=error, 0=ok);
-    otherwise, the returned value is often negative when an error occured
+    otherwise, the returned value is often negative when an error occurred
     (HFILE_ERROR = INVALID_HANDLE_VALUE = INVALID_FILE_SIZE = -1 for examples),
     then use "?ior" directly (preceded by "dup" or later followed by "ior@").
   see also: ior shell cd libc k32  Lin:ff.ff Win:ffwinio.asm
@@ -1776,7 +1806,7 @@ floats
 FPU  means Floating-Point Unit (use finit to initialize it)
 FPstack  FreeForth uses a separate stack for floats, the 386-associated FPU
   hardware LIFO stack, composed of eight 80-bits cells: 10 bytes LSByte1st,
-  64-bits significand, 15-bits biaised exponent, MSBit sign -- see also f.s
+  64-bits significand, 15-bits biased exponent, MSBit sign -- see also f.s
   FPstack top cell is called ST0, the cell under it ST1, then ST2 upto ST7.
   Although almost all FPstack words operate separately from DATAstack words,
   floats are represented in DATAstack diagrams for simplicity, prefixed by f:
@@ -2045,7 +2075,7 @@ fnumber ( @ # -- f:x ) converts string (starting at address "@" for "#" bytes)
 
 uart! ( n -- ) selects the current serial context: up to 4 (n=0,1,2,3) serial
   contexts may be maintained concurrently, all other serial commands operate
-  implicitely in the current serial context.
+  implicitly in the current serial context.
   : uart! COM 2@ over 3& 1+ 8* COM+ 2!  3& 1+ 8* COM+ 2@ COM 2! ;
 port! ( n -- ) selects the port number of the current serial context:
   Lin: n=0:/dev/ttyS0 .. 31:/dev/ttyS31, 32:/dev/ttyUSB0 .. n=63:/dev/ttyUSB31

@@ -22,9 +22,6 @@ _sys1:  DUP2
 ;;; "mode" specifies the "rwxrwxrwx" user/group/other rights on the file,
 ;;; they are conveniently specified in octal (see man 2 open), usually "&644"
 
-DATA "open'",_openbuf,0         ; path to FreeForth root directory /-terminated
-        rb 60                   ; counted string, for append with zt-string
-
 ;;; openr opens existing file for read-only
 CODE "openr",_openr             ; @ # -- fd ; zt &644 r/o rot 3 5 syscall ;
         xor ecx,ecx             ; $00(O_RDONLY)
@@ -42,15 +39,7 @@ _open:  mov byte[edx+ebx],0     ; append zero-terminator (another whitespace)
         xchg eax,esp
         pushd 420               ; mode=420=&644
         push ecx                ; flags
-        cmp byte[edx],"'"       ; quote-prefix?
-        jne @f                  ;   append @,# to _openbuf:
-        lea esi,[edx+1]         ;   esi points after prefix
-        mov edx,_openbuf+1      ;   edx points after _openbuf count
-        movzx edi,byte[edx-1]   ;   edi = _openbuf count
-        lea edi,[edx+edi]       ;   edi points after last _openbuf char
-        mov ecx,ebx             ;   one less for prefix, one more for zt
-        rep movsb               ;   append filename to root directory
-@@:     push edx                ; -- mode flags zt
+        push edx                ; -- mode flags zt
         xchg eax,esp
         mov edx,3
         mov ebx,5
