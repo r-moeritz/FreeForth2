@@ -30,12 +30,12 @@ constant` ' alias equ` \ shorter, and more usual for assembly programmers
 \ ?ior malloc/free lseek ioctl/select
 
 \ fixup replaces a 5 byte call with a mov ebx,funh and
-\ modifies the call stack to remove the earlier return address;
+\ modifies the call stack to return to just before the mov;
 \ used for once-only symbol resolution at runtime (turnkey safe)
-: fixup libc@ #fun nip r> rdrop dup>r 5+ $bb overc! 1+ ! ;
+: fixup libc@ #fun rdrop r> 5- dup>r $bb overc! 1+ ! ;
 
 : `strerror "strerror" fixup
-:  strerror dup `strerror >r negate 1 r> #call zlen type cr ;
+:  strerror negate 1 dup `strerror #call zlen type cr ;
 
 variable ior \ I/O result, error when negative:
 : ?ior 0- ior! \ n -- ; displays system error message
@@ -43,9 +43,9 @@ variable ior \ I/O result, error when negative:
 ;
 
 : `malloc "malloc" fixup
-:  malloc dup `malloc 1 swap #call  ; \ # -- @ ; see "man malloc"
+:  malloc 1 dup `malloc #call  ; \ # -- @ ; see "man malloc"
 : `free "free" fixup
-:  free dup `free 1 swap #call drop ; \ @ --
+:  free 1 dup `free #call drop ; \ @ --
 
 \ syscall values see /usr/include/asm-i386/unistd.h
 : lseek  3  19 syscall ; \ wh off fd -- off ; wh=0:SET 1:CUR 2:END
@@ -77,9 +77,9 @@ variable `fdset  0 , 0 , \ for select, the 2 zeros are a null timeval
   over+ 0 swap c! ;
 
 : `getenv "getenv" fixup
-:  getenv dup `getenv >r zt 1 r> #call 0- 0= IF 0 ELSE zlen THEN ;
+:  getenv zt 1 dup `getenv #call 0- 0= IF 0 ELSE zlen THEN ;
 : `system "system" fixup
-:  system dup `system >r zt 1 r> #call ;
+:  system zt 1 dup `system #call ;
 
 : man` >in@ 4- lnparse + over- \ <mantopic> -- ; 4-:"man_" fallthru
 : shell  \ @ # -- ; send command to shell, command result into ior
