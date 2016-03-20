@@ -263,7 +263,10 @@ r>` ( -- x | x == ) pops x from CALLstack and pushes it onto DATAstack
   : 2r>` 2dup` dropr>` swap` dropr>` swap` ;
 dropr>` ( x -- y | y == ) pops y from CALLstack and overwrites TOS with it
   : dropr>` >C0 $5B, s1 ; \ pop ebx
-  see also: >r 2>r dup>r r> 2r> dropr> r 2r rdrop 2rdrop  ff.boot
+>>r`  ( xn..x1 n -- | == x1..xn ) repeatedly pop DATAstack, push to CALLstack
+>>rr` ( xn..x1 n -- | == xn..x1 ) repeatedly pop DATAstack, push to CALLstack
+  see also: >r 2>r dup>r r> 2r> dropr> r 2r rdrop 2rdrop
+            >>r >>rr +r -r xxr r0 r1 r2 r0! r1! r2!  ff.boot
 
 r` ( -- x | x == x ) pushes the CALLstack top cell onto the DATAstack
   : r` over` $188B, s08 ; \ mov ebx,[eax]
@@ -274,7 +277,24 @@ rdrop` ( -- | x == ) pops the CALLstack top cell, which is lost
   : rdrop` $04C483, c04 ,1 ; \ add esp/eax,4
 2rdrop` ( -- | x y == ) pops the CALLstack top two cells, which are lost
   : 2rdrop` $08C483, c04 ,1 ; \ add esp/eax,8
-  see also: r 2r rdrop 2rdrop >r 2>r dup>r r> 2>r dropr>  ff.boot
++r` ( n -- | xn..x1 == ) pops the CALLstack top n cells, which are lost
+-r` ( n -- | == ?n..?1 ) reserves n uninitialized cells on CALLstack
+xxr` ( n -- | xn..x1 == ) alias for +r`
+r0` ( -- x | x == x ) pushes the CALLstack top cell onto the DATAstack
+r1` ( -- y | y x == y x ) pushes the CALLstack 2nd cell onto the DATAstack
+r2` ( -- z | z y x == z y x ) pushes the CALLstack 3rd cell onto the DATAstack
+r3`  ... 4th cell
+r4`  ... 5th cell
+r5`  ... 6th cell
+r0!` ( x -- | a == x ) pops the DATAstack and stores in CALLstack top cell
+r1!` ( x -- | b a == x a ) pops the DATAstack and stores in CALLstack 2nd cell
+r2!` ( x -- | c b a == x b a ) pops DATAstack and stores in CALLstack 3rd cell
+r3!`  ... 4th cell
+r4!`  ... 5th cell
+r5!`  ... 6th cell
+r!` alias for r0!`
+  see also: r 2r rdrop 2rdrop >r 2>r dup>r r> 2>r dropr>
+            >>r >>rr +r -r xxr r0 r1 r2 r0! r1! r2!  ff.boot
 
 rp@` ( -- @ ) push on DATAstack the current CALLstack pointer
   : rp@` over` $C389, s01 ;  \ mov ebx,eax

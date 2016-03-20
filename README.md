@@ -3,6 +3,7 @@ Derived from FreeForth by Christophe Lavarenne
 
 ## New Features
 * turnkey support
+* simple locals
 * segfault handler
 * see disassembles words
 * simple approach to arguments
