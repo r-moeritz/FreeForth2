@@ -239,9 +239,8 @@ variable base 10 base!
 : `exec catch 0;  `back ."_<-error:_" c@+ type cr  2drop
   anon@ 0- 0= IF drop H@ dup@ swap 5+ c@+ + 1+ H! THEN
   here - allot  0 SC c! anon:` 0<>`  START `eval ENTER
-:^ `top ui tib 1024 under accept 0- 0= exit ?
-  2dup 1- + dup 1- c@ dup ';' - swap '\' - & 0- 0= drop IF drop ELSE
-  $3b20 swap w! 1+ THEN REPEAT ;
+:^ `top ui tib 1024 under accept 0- 0= exit ? dup 1- 0= drop IF AGAIN
+  2dup 2- + c@ ';' - 0= drop IF AGAIN 2dup 1- + $3b20 swap w! 1+ REPEAT ;
 : bye` ;` cr 0 exit ;
 : help` !"Can't_find_file_ff.ff_needed_for_help!"
 :^ doargv argc 1- 0; 1 `argv swap 2+ `argv over- tuck tib place swap `eval ;
