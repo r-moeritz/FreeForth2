@@ -1410,8 +1410,9 @@ stat ( @ # -- 0 | -n ) requests the operating system to stat a file;
   see also: openr openw read write "man stat"  full.ff
 
 mkmm ( <name> -- ) allocate mm structure to describe an mmap'd file and
-  populate with default values. Fields are sz (size), fd (file descriptor),
-  prot (protection bits), and flags.
+  populate with default values. The first cell holds the map address.
+  Subsequent cells hold the size (sz), file descriptor (fd),
+  protection bits (prot), and flags.
 mm.sz ( @ -- @ ) increase address of mm struct with offset of sz field.
 mm.fd ( @ -- @ ) increase address of mm struct with offset of fd field.
 mm.prot ( @ -- @ ) increase address of mm struct with offset of prot field.
