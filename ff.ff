@@ -38,8 +38,8 @@ constant` ' alias equ` \ shorter, and more usual for assembly programmers
 :  strerror negate 1 dup `strerror #call zlen type cr ;
 
 variable ior \ I/O result, error when negative:
-: ?ior 0- ior! \ n -- ; displays system error message
-  0< IF ior@ strerror !"system_call_failed" THEN
+: ?ior dup ior! \ n -- ; displays system error message
+  $FF | -1 = 2drop IF ior@ strerror !"system_call_failed" THEN
 ;
 
 : `malloc "malloc" fixup

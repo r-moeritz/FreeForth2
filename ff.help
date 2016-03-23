@@ -1404,6 +1404,29 @@ write ( @ # fd -- n ) request the operating system to write into (i.e.
   Win: see ffwinio.asm
   see also: openr openw read close syscall  fflinio.asm/ffwinio.asm
 
+stat ( @ # -- 0 | -n ) requests the operating system to stat a file;
+  returns 0 on success and -n if an error occurred; populates st_buf
+  with a stat structure. st_buf is overwritten with each stat call.
+  see also: openr openw read write "man stat"  full.ff
+
+mkmm ( <name> -- ) allocate mm structure to describe an mmap'd file and
+  populate with default values. Fields are sz (size), fd (file descriptor),
+  prot (protection bits), and flags.
+mm.sz ( @ -- @ ) increase address of mm struct with offset of sz field.
+mm.fd ( @ -- @ ) increase address of mm struct with offset of fd field.
+mm.prot ( @ -- @ ) increase address of mm struct with offset of prot field.
+mm.flags ( @ -- @ ) increase address of mm struct with offset of flags field.
+mmapr ( @ # mm -- @ | -n ) open and mmaps existing file for reading;
+  populates mm struct; returns address on success or -n on error.
+mmapw ( @ # mm -- @ | -n ) open and mmaps existing file for reading and writing;
+  populates mm struct; returns address on success or -n on error.
+mmapwt ( @ # n mm -- @ | -n ) open and mmaps a new file for reading and writing;
+  file is created or truncated to zero if it exists, then extended to n bytes;
+  populates mm struct; returns address on success or -n on error.
+munmap ( mm -- ior ior ) munmaps and closes mmap'd file referred to by the
+  mm struct and returns the result of each operation.
+  see also: mkmm mm.sz mm.fd mm.prot mm.flags mmapr mmapw mmapwt munmap  full.ff
+
 lseek ( wh off fd -- off ) request the operating system to seek through the
   file specified by the file-descriptor "fd", for "off" bytes relatively to
   either the start-of-file if wh=0(SET), or its current position if wh=1(CUR),
