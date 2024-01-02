@@ -1,4 +1,4 @@
-LD=ld -m elf_i386 /lib/libdl.so.2 --dynamic-linker /lib/ld-linux.so.2 -s
+LD=gcc -m32 -s -rdynamic -nostartfiles -ldl
 
 all: ff fftk
 

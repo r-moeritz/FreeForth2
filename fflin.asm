@@ -5,8 +5,7 @@
 ;;; Typical compile command (with http://flatassembler.net):
 ;;; if ffdl ; i.e. with dynamic-link-library support
 ;;;   fasm fflin.asm ff.o
-;;;   gcc ff.o -o ff -s -rdynamic -nostartfiles -ldl
-;;;   # or: ld -o ff ff.o -ldl --dynamic-linker /lib/ld-linux.so.2 -s
+;;;   gcc -m32 ff.o -o ff -s -rdynamic -nostartfiles -ldl
 ;;; else
 ;;;   fasm fflin.asm ff
 ;;; end if

@@ -13,3 +13,8 @@ Derived from FreeForth by Christophe Lavarenne
 * interactive input automatically terminated
 * quoted literals may contain spaces
 * abandoned windows support
+
+## Building
+
+1. Get [fasm](https://flatassembler.net/) & put in your `PATH`.
+2. Run `make ff` to produce the `ff` binary.
